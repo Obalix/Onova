@@ -23,11 +23,13 @@ namespace Onova.Updater.Internal
             }
         }
 
-        public static async Task<bool> CheckWriteAccessAsync(string filePath) {
-            while (CheckWriteAccess(filePath)) {
+        public static async Task<bool> CheckWriteAccessAsync(string filePath)
+        {
+            while (!CheckWriteAccess(filePath))
+            {
                 await Task.Delay(TimeSpan.FromSeconds(1));
             }
-            
+
             return true;
         }
     }
