@@ -18,6 +18,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageId>Onova_Extended</PackageId>
     <Copyright>Copyright (C) Alexey Golub, Axel Eckenberger</Copyright>
+    <Version>2.6.2.2</Version>
   </PropertyGroup>
 
   <!-- Disable nullability warnings on older frameworks because there is no nullability info for BCL -->
