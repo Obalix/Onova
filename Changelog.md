@@ -1,3 +1,9 @@
+### v2.6.2 (Extended) (03-Nov-2020)
+
+- Added .editorconfig to improve usage of coding conventions.
+- Added asynchronous method for waiting on a file.
+- Added additional parameter to IUpdateManager.LaunchUpdater to wait for additional executables before starting the update process.
+
 ### v2.6.2 (17-Sep-2020)
 
 - Fixed an issue in `GithubPackageResolver` which prevented it from working properly with private repositories. (Thanks [@derech1e](https://github.com/derech1e))

@@ -3,11 +3,11 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461;netcoreapp3.0</TargetFrameworks>
-    <Authors>$(Company)</Authors>
+    <Authors>Tyrrrz, Obalix</Authors>
     <Description>Compact and extensible auto-update library</Description>
     <PackageTags>auto update</PackageTags>
-    <PackageProjectUrl>https://github.com/Tyrrrz/Onova</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/Tyrrrz/Onova/blob/master/Changelog.md</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/Obalix/Onova</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/Obalix/Onova/blob/master/Changelog.md</PackageReleaseNotes>
     <PackageIcon>favicon.png</PackageIcon>
     <PackageLicenseExpression>LGPL-3.0-only</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
@@ -16,6 +16,8 @@
     <EmbedUntrackedSources>True</EmbedUntrackedSources>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageId>Onova_Extended</PackageId>
+    <Copyright>Copyright (C) Alexey Golub, Axel Eckenberger</Copyright>
   </PropertyGroup>
 
   <!-- Disable nullability warnings on older frameworks because there is no nullability info for BCL -->
