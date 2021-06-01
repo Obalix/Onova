@@ -17,7 +17,7 @@ namespace Onova.Updater
         private readonly string[] _aditionalExecutables;
 
         private readonly TextWriter _log = File.CreateText(
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Log.txt")
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdaterLog.txt")
         );
 
         public Updater(
