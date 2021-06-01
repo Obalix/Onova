@@ -25,8 +25,8 @@ namespace Onova.Services
         /// </summary>
         public LocalPackageResolver(string repositoryDirPath, string fileNamePattern = "*")
         {
-            _repositoryDirPath = repositoryDirPath;
-            _fileNamePattern = fileNamePattern;
+            this._repositoryDirPath = repositoryDirPath;
+            this._fileNamePattern = fileNamePattern;
         }
 
         private IReadOnlyDictionary<Version, string> GetPackageVersionFilePathMap()
@@ -34,15 +34,15 @@ namespace Onova.Services
             var map = new Dictionary<Version, string>();
 
             // Check if repository directory exists
-            if (!Directory.Exists(_repositoryDirPath))
+            if (!Directory.Exists(this._repositoryDirPath))
                 return map;
 
             // Enumerate files in repository directory
-            foreach (var filePath in Directory.EnumerateFiles(_repositoryDirPath))
+            foreach (var filePath in Directory.EnumerateFiles(this._repositoryDirPath))
             {
                 // See if name matches
                 var fileName = Path.GetFileName(filePath);
-                if (!WildcardPattern.IsMatch(fileName, _fileNamePattern))
+                if (!WildcardPattern.IsMatch(fileName, this._fileNamePattern))
                     continue;
 
                 // Try to parse version
@@ -61,7 +61,7 @@ namespace Onova.Services
         /// <inheritdoc />
         public Task<IReadOnlyList<Version>> GetPackageVersionsAsync(CancellationToken cancellationToken = default)
         {
-            var versions = GetPackageVersionFilePathMap().Keys.ToArray();
+            var versions = this.GetPackageVersionFilePathMap().Keys.ToArray();
             return Task.FromResult((IReadOnlyList<Version>) versions);
         }
 
@@ -70,11 +70,10 @@ namespace Onova.Services
             IProgress<double>? progress = null, CancellationToken cancellationToken = default)
         {
             // Get map
-            var map = GetPackageVersionFilePathMap();
+            var map = this.GetPackageVersionFilePathMap();
 
             // Try to get package file path
-            var sourceFilePath = map.GetValueOrDefault(version);
-            if (string.IsNullOrWhiteSpace(sourceFilePath))
+            if (!map.TryGetValue(version, out var sourceFilePath) || string.IsNullOrWhiteSpace(sourceFilePath))
                 throw new PackageNotFoundException(version);
 
             // Copy file

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -30,6 +31,7 @@ namespace Onova
 
         private LockFile? _lockFile;
         private bool _isDisposed;
+        private readonly TextWriter _log;
 
         /// <inheritdoc />
         public AssemblyMetadata Updatee { get; }
@@ -37,27 +39,33 @@ namespace Onova
         /// <summary>
         /// Initializes an instance of <see cref="UpdateManager"/>.
         /// </summary>
+        [SuppressMessage("CodeQuality", "IDE0079", Justification = "Suppression necessary for netcore31")]
         public UpdateManager(AssemblyMetadata updatee, IPackageResolver resolver, IPackageExtractor extractor)
         {
             Platform.EnsureWindows();
 
-            Updatee = updatee;
-            _resolver = resolver;
-            _extractor = extractor;
+            this.Updatee = updatee;
+            this._resolver = resolver;
+            this._extractor = extractor;
 
             // Set storage directory path
-            _storageDirPath = Path.Combine(
+            this._storageDirPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Onova",
                 updatee.Name
             );
 
             // Set updater executable file path
-            _updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}.Updater.exe");
+            this._updaterFilePath = Path.Combine(this._storageDirPath, $"{updatee.Name}.Updater.exe");
 
             // Set lock file path
-            _lockFilePath = Path.Combine(_storageDirPath, "Onova.lock");
-        }
+            this._lockFilePath = Path.Combine(this._storageDirPath, "Onova.lock");
+
+#pragma warning disable CS8604 // Possible null reference argument.
+            this._log = File.CreateText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateManagerLog.txt")
+#pragma warning restore CS8604 // Possible null reference argument.
+        );
+    }
 
         /// <summary>
         /// Initializes an instance of <see cref="UpdateManager"/> on the entry assembly.
@@ -67,26 +75,26 @@ namespace Onova
         {
         }
 
-        private string GetPackageFilePath(Version version) => Path.Combine(_storageDirPath, $"{version}.onv");
+        private string GetPackageFilePath(Version version) => Path.Combine(this._storageDirPath, $"{version}.onv");
 
-        private string GetPackageContentDirPath(Version version) => Path.Combine(_storageDirPath, $"{version}");
+        private string GetPackageContentDirPath(Version version) => Path.Combine(this._storageDirPath, $"{version}");
 
         private void EnsureNotDisposed()
         {
-            if (_isDisposed)
-                throw new ObjectDisposedException(GetType().FullName);
+            if (this._isDisposed)
+                throw new ObjectDisposedException(this.GetType().FullName);
         }
 
         private void EnsureLockFileAcquired()
         {
             // Ensure storage directory exists
-            Directory.CreateDirectory(_storageDirPath);
+            Directory.CreateDirectory(this._storageDirPath);
 
             // Try to acquire lock file if it's not acquired yet
-            _lockFile ??= LockFile.TryAcquire(_lockFilePath);
+            this._lockFile ??= LockFile.TryAcquire(this._lockFilePath);
 
             // If failed to acquire - throw
-            if (_lockFile == null)
+            if (this._lockFile == null)
                 throw new LockFileNotAcquiredException();
         }
 
@@ -94,13 +102,13 @@ namespace Onova
         {
             // Check whether we have write access to updater executable
             // (this is a reasonably accurate check for whether that process is running)
-            if (File.Exists(_updaterFilePath) && !FileEx.CheckWriteAccess(_updaterFilePath))
+            if (File.Exists(this._updaterFilePath) && !FileEx.CheckWriteAccess(this._updaterFilePath))
                 throw new UpdaterAlreadyLaunchedException();
         }
 
         private void EnsureUpdatePrepared(Version version)
         {
-            if (!IsUpdatePrepared(version))
+            if (!this.IsUpdatePrepared(version))
                 throw new UpdateNotPreparedException(version);
         }
 
@@ -108,12 +116,12 @@ namespace Onova
         public async Task<CheckForUpdatesResult> CheckForUpdatesAsync(CancellationToken cancellationToken = default)
         {
             // Ensure that the current state is valid for this operation
-            EnsureNotDisposed();
+            this.EnsureNotDisposed();
 
             // Get versions
-            var versions = await _resolver.GetPackageVersionsAsync(cancellationToken);
+            var versions = await this._resolver.GetPackageVersionsAsync(cancellationToken);
             var lastVersion = versions.Max();
-            var canUpdate = lastVersion != null && Updatee.Version < lastVersion;
+            var canUpdate = lastVersion != null && this.Updatee.Version < lastVersion;
 
             return new CheckForUpdatesResult(versions, lastVersion, canUpdate);
         }
@@ -122,32 +130,32 @@ namespace Onova
         public bool IsUpdatePrepared(Version version)
         {
             // Ensure that the current state is valid for this operation
-            EnsureNotDisposed();
+            this.EnsureNotDisposed();
 
             // Get package file path and content directory path
-            var packageFilePath = GetPackageFilePath(version);
-            var packageContentDirPath = GetPackageContentDirPath(version);
+            var packageFilePath = this.GetPackageFilePath(version);
+            var packageContentDirPath = this.GetPackageContentDirPath(version);
 
             // Package content directory should exist
             // Package file should have been deleted after extraction
             // Updater file should exist
             return !File.Exists(packageFilePath) &&
                    Directory.Exists(packageContentDirPath) &&
-                   File.Exists(_updaterFilePath);
+                   File.Exists(this._updaterFilePath);
         }
 
         /// <inheritdoc />
         public IReadOnlyList<Version> GetPreparedUpdates()
         {
             // Ensure that the current state is valid for this operation
-            EnsureNotDisposed();
+            this.EnsureNotDisposed();
 
             var result = new List<Version>();
 
             // Enumerate all immediate directories in storage
-            if (Directory.Exists(_storageDirPath))
+            if (Directory.Exists(this._storageDirPath))
             {
-                foreach (var packageContentDirPath in Directory.EnumerateDirectories(_storageDirPath))
+                foreach (var packageContentDirPath in Directory.EnumerateDirectories(this._storageDirPath))
                 {
                     // Get directory name
                     var packageContentDirName = Path.GetFileName(packageContentDirPath);
@@ -160,7 +168,7 @@ namespace Onova
                     }
 
                     // If this package is prepared - add it to the list
-                    if (IsUpdatePrepared(version))
+                    if (this.IsUpdatePrepared(version))
                     {
                         result.Add(version);
                     }
@@ -175,9 +183,9 @@ namespace Onova
             IProgress<double>? progress = null, CancellationToken cancellationToken = default)
         {
             // Ensure that the current state is valid for this operation
-            EnsureNotDisposed();
-            EnsureLockFileAcquired();
-            EnsureUpdaterNotLaunched();
+            this.EnsureNotDisposed();
+            this.EnsureLockFileAcquired();
+            this.EnsureUpdaterNotLaunched();
 
             // Set up progress mixer
             var progressMixer = progress != null
@@ -185,14 +193,14 @@ namespace Onova
                 : null;
 
             // Get package file path and content directory path
-            var packageFilePath = GetPackageFilePath(version);
-            var packageContentDirPath = GetPackageContentDirPath(version);
+            var packageFilePath = this.GetPackageFilePath(version);
+            var packageContentDirPath = this.GetPackageContentDirPath(version);
 
             // Ensure storage directory exists
-            Directory.CreateDirectory(_storageDirPath);
+            Directory.CreateDirectory(this._storageDirPath);
 
             // Download package
-            await _resolver.DownloadPackageAsync(version, packageFilePath,
+            await this._resolver.DownloadPackageAsync(version, packageFilePath,
                 progressMixer?.Split(0.9), // 0% -> 90%
                 cancellationToken
             );
@@ -201,7 +209,7 @@ namespace Onova
             DirectoryEx.Reset(packageContentDirPath);
 
             // Extract package contents
-            await _extractor.ExtractPackageAsync(packageFilePath, packageContentDirPath,
+            await this._extractor.ExtractPackageAsync(packageFilePath, packageContentDirPath,
                 progressMixer?.Split(0.1), // 90% -> 100%
                 cancellationToken
             );
@@ -210,22 +218,22 @@ namespace Onova
             File.Delete(packageFilePath);
 
             // Extract updater
-            await Assembly.GetExecutingAssembly().ExtractManifestResourceAsync(UpdaterResourceName, _updaterFilePath);
+            await Assembly.GetExecutingAssembly().ExtractManifestResourceAsync(UpdaterResourceName, this._updaterFilePath);
         }
 
         /// <inheritdoc />
         public void LaunchUpdater(Version version, bool restart, string restartArguments, string[]? additonalExecutables = null)
         {
             // Ensure that the current state is valid for this operation
-            EnsureNotDisposed();
-            EnsureLockFileAcquired();
-            EnsureUpdaterNotLaunched();
-            EnsureUpdatePrepared(version);
+            this.EnsureNotDisposed();
+            this.EnsureLockFileAcquired();
+            this.EnsureUpdaterNotLaunched();
+            this.EnsureUpdatePrepared(version);
 
-            var updateeDirPath = Path.GetDirectoryName(Updatee.FilePath);
+            var updateeDirPath = Path.GetDirectoryName(this.Updatee.FilePath);
 
             // Get package content directory path
-            var packageContentDirPath = GetPackageContentDirPath(version);
+            var packageContentDirPath = this.GetPackageContentDirPath(version);
 
             // Get original command line arguments and encode them to avoid issues with quotes
             var routedArgs = restartArguments.GetBytes().ToBase64();
@@ -236,7 +244,7 @@ namespace Onova
             var addExes = string.Join(";", addExePaths).GetBytes().ToBase64();
 
             // Prepare arguments
-            var updaterArgs = $"\"{Updatee.FilePath}\" \"{packageContentDirPath}\" \"{restart}\" \"{routedArgs}\" \"{addExes}\"";
+            var updaterArgs = $"\"{this.Updatee.FilePath}\" \"{packageContentDirPath}\" \"{restart}\" \"{routedArgs}\" \"{addExes}\"";
 
             // Decide if updater needs to be elevated
 
@@ -269,10 +277,11 @@ namespace Onova
         /// <inheritdoc />
         public void Dispose()
         {
-            if (!_isDisposed)
+            if (!this._isDisposed)
             {
-                _isDisposed = true;
-                _lockFile?.Dispose();
+                this._isDisposed = true;
+                this._lockFile?.Dispose();
+                this._log?.Dispose();
             }
         }
     }

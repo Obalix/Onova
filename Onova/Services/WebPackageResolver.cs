@@ -25,8 +25,8 @@ namespace Onova.Services
         /// </summary>
         public WebPackageResolver(HttpClient httpClient, string manifestUrl)
         {
-            _httpClient = httpClient;
-            _manifestUrl = manifestUrl;
+            this._httpClient = httpClient;
+            this._manifestUrl = manifestUrl;
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace Onova.Services
 
         private string ExpandRelativeUrl(string url)
         {
-            var manifestUri = new Uri(_manifestUrl);
+            var manifestUri = new Uri(this._manifestUrl);
             var uri = new Uri(manifestUri, url);
 
             return uri.ToString();
@@ -50,9 +50,9 @@ namespace Onova.Services
             var map = new Dictionary<Version, string>();
 
             // Get manifest
-            var response = await _httpClient.GetStringAsync(_manifestUrl, cancellationToken);
+            var response = await this._httpClient.GetStringAsync(this._manifestUrl, cancellationToken);
 
-            foreach (var line in response.Split("\n"))
+            foreach (var line in response.Split('\n'))
             {
                 // Get package version and URL
                 var versionText = line.SubstringUntil(" ").Trim();
@@ -67,7 +67,7 @@ namespace Onova.Services
                     continue;
 
                 // Expand URL if it's relative
-                url = ExpandRelativeUrl(url);
+                url = this.ExpandRelativeUrl(url);
 
                 // Add to dictionary
                 map[version] = url;
@@ -79,7 +79,7 @@ namespace Onova.Services
         /// <inheritdoc />
         public async Task<IReadOnlyList<Version>> GetPackageVersionsAsync(CancellationToken cancellationToken = default)
         {
-            var versions = await GetPackageVersionUrlMapAsync(cancellationToken);
+            var versions = await this.GetPackageVersionUrlMapAsync(cancellationToken);
             return versions.Keys.ToArray();
         }
 
@@ -88,15 +88,14 @@ namespace Onova.Services
             IProgress<double>? progress = null, CancellationToken cancellationToken = default)
         {
             // Get map
-            var map = await GetPackageVersionUrlMapAsync(cancellationToken);
+            var map = await this.GetPackageVersionUrlMapAsync(cancellationToken);
 
             // Try to get package URL
-            var packageUrl = map.GetValueOrDefault(version);
-            if (string.IsNullOrWhiteSpace(packageUrl))
+            if (!map.TryGetValue(version, out var packageUrl) || string.IsNullOrWhiteSpace(packageUrl)) 
                 throw new PackageNotFoundException(version);
 
             // Download
-            using var response = await _httpClient.GetAsync(packageUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            using var response = await this._httpClient.GetAsync(packageUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             using var output = File.Create(destFilePath);

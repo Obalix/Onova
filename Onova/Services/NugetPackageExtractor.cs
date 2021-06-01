@@ -21,7 +21,7 @@ namespace Onova.Services
         /// </summary>
         public NugetPackageExtractor(string rootDirPath)
         {
-            _rootDirPath = rootDirPath;
+            this._rootDirPath = rootDirPath;
         }
 
         /// <inheritdoc />
@@ -33,7 +33,7 @@ namespace Onova.Services
 
             // Get entries in the content directory
             var entries = archive.Entries
-                .Where(e => e.FullName.StartsWith(_rootDirPath, StringComparison.OrdinalIgnoreCase))
+                .Where(e => e.FullName.StartsWith(this._rootDirPath, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
             // For progress reporting
@@ -44,7 +44,7 @@ namespace Onova.Services
             foreach (var entry in entries)
             {
                 // Get relative entry path
-                var relativeEntryPath = entry.FullName.Substring(_rootDirPath.Length).TrimStart('/', '\\');
+                var relativeEntryPath = entry.FullName.Substring(this._rootDirPath.Length).TrimStart('/', '\\');
 
                 // Get destination paths
                 var entryDestFilePath = Path.Combine(destDirPath, relativeEntryPath);

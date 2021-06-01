@@ -13,7 +13,7 @@ namespace Onova.Internal.Extensions
             byte[] buffer,
             CancellationToken cancellationToken = default)
         {
-            var bytesCopied = await source.ReadAsync(buffer, cancellationToken);
+            var bytesCopied = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
             await destination.WriteAsync(buffer, 0, bytesCopied, cancellationToken);
 
             return bytesCopied;

@@ -21,16 +21,16 @@ namespace Onova.Services
         private readonly string _serviceIndexUrl;
         private readonly string _packageId;
 
-        private string PackageIdNormalized => _packageId.ToLowerInvariant();
+        private string PackageIdNormalized => this._packageId.ToLowerInvariant();
 
         /// <summary>
         /// Initializes an instance of <see cref="NugetPackageResolver"/>.
         /// </summary>
         public NugetPackageResolver(HttpClient httpClient, string serviceIndexUrl, string packageId)
         {
-            _httpClient = httpClient;
-            _serviceIndexUrl = serviceIndexUrl;
-            _packageId = packageId;
+            this._httpClient = httpClient;
+            this._serviceIndexUrl = serviceIndexUrl;
+            this._packageId = packageId;
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Onova.Services
         private async Task<string> GetPackageBaseAddressResourceUrlAsync(CancellationToken cancellationToken)
         {
             // Get all available resources
-            var responseJson = await _httpClient.GetJsonAsync(_serviceIndexUrl, cancellationToken);
+            var responseJson = await this._httpClient.GetJsonAsync(this._serviceIndexUrl, cancellationToken);
             var resourcesJson = responseJson.GetProperty("resources");
 
             // Get URL of the required resource
@@ -64,11 +64,11 @@ namespace Onova.Services
         public async Task<IReadOnlyList<Version>> GetPackageVersionsAsync(CancellationToken cancellationToken = default)
         {
             // Get package base address resource URL
-            var resourceUrl = await GetPackageBaseAddressResourceUrlAsync(cancellationToken);
+            var resourceUrl = await this.GetPackageBaseAddressResourceUrlAsync(cancellationToken);
 
             // Get versions
-            var request = $"{resourceUrl}/{PackageIdNormalized}/index.json";
-            var responseJson = await _httpClient.GetJsonAsync(request, cancellationToken);
+            var request = $"{resourceUrl}/{this.PackageIdNormalized}/index.json";
+            var responseJson = await this._httpClient.GetJsonAsync(request, cancellationToken);
             var versionsJson = responseJson.GetProperty("versions");
             var versions = new HashSet<Version>();
 
@@ -88,13 +88,13 @@ namespace Onova.Services
             IProgress<double>? progress = null, CancellationToken cancellationToken = default)
         {
             // Get package base address resource URL
-            var resourceUrl = await GetPackageBaseAddressResourceUrlAsync(cancellationToken);
+            var resourceUrl = await this.GetPackageBaseAddressResourceUrlAsync(cancellationToken);
 
             // Get package URL
-            var packageUrl = $"{resourceUrl}/{PackageIdNormalized}/{version}/{PackageIdNormalized}.{version}.nupkg";
+            var packageUrl = $"{resourceUrl}/{this.PackageIdNormalized}/{version}/{this.PackageIdNormalized}.{version}.nupkg";
 
             // Get response
-            using var response = await _httpClient.GetAsync(packageUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            using var response = await this._httpClient.GetAsync(packageUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
             // If status code is 404 then this version doesn't exist
             if (response.StatusCode == HttpStatusCode.NotFound)
