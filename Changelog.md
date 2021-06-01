@@ -2,6 +2,7 @@
 
 - Added support for net472 and netcoreapp3.1
 - Removed support for net461 and netcoreapp3.0
+- Added loggong for update process into file $"{updatee.Name}.UpdateManagerLog.txt"
 - Code clean-up and style improvements
 - Renamed updater log from "Log.txt" to "updaterLog.txt"
 - Use one .editorconfig for both 
