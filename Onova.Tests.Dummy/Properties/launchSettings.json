@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Onova.Tests.Dummy": {
+      "commandName": "Project",
+      "commandLineArgs": "update"
+    }
+  }
+}
