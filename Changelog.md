@@ -1,3 +1,12 @@
+### v3.0.0 (Extended) (01-Jun-2021)
+
+- Added support for net472 and netcoreapp3.1
+- Removed support for net461 and netcoreapp3.0
+- Code clean-up and style improvements
+- Renamed updater log from "Log.txt" to "updaterLog.txt"
+- Use one .editorconfig for both 
+- Move tests to Testfolder in solution
+
 ### v2.6.2 (Extended) (03-Nov-2020)
 
 - Added .editorconfig to improve usage of coding conventions.
