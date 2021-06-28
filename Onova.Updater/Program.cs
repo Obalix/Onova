@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Onova.Updater.Internal;
 
 namespace Onova.Updater
@@ -16,7 +17,7 @@ namespace Onova.Updater
             var routedArgs = args[3].FromBase64().GetString();
             // Base64 encoded semicolon delimited list of paths to executables to wait for
             // before installing the application
-            var additionalExecutables = args[4].FromBase64().GetString().Split(';');
+            var additionalExecutables = args.Length == 5 ? args[4].FromBase64().GetString().Split(';') : Array.Empty<string>();
 
             using var updater = new Updater(updateeFilePath, packageContentDirPath, restartUpdatee, routedArgs, additionalExecutables);
             await updater.Run();
