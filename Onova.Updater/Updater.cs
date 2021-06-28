@@ -55,6 +55,10 @@ namespace Onova.Updater
                 .Select(exe => FileEx.CheckWriteAccessAsync(exe));
             await Task.WhenAll(executables);
 
+			// Let the application be unloaded and all file handles freed before continuing
+			// NOTE: this value might have to be adjusted
+			await Task.Delay(TimeSpan.FromSeconds(1));
+
             // Copy over the package contents
             this.WriteLog("Copying package contents from storage to updatee's directory...");
             DirectoryEx.Copy(this._packageContentDirPath, updateeDirPath);
