@@ -5,7 +5,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net46</TargetFramework>
     <ApplicationIcon>../favicon.ico</ApplicationIcon>
-    <Version>3.0.0</Version>
+    <Version>3.1.0</Version>
     <Company>Tyrrrz, Obalix</Company>
     <Copyright>Copyright (C) Alexey Golub, Axel Eckenberger</Copyright>
     <Product>Onova.Updater (Extended)</Product>

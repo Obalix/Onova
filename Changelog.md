@@ -1,3 +1,10 @@
+### v3.1.0 (Extended) (28-Jun-2021)
+
+- Separated executable and name in AssemblyMetadata class to allow for more flexibility in case of multiple installation directories, that do share a common executable name - i.e. product variants.
+- Added guard to ensure applicaiton can be called without additionalExecutables parameter.
+- Added delay after read access to additional executables have been established, to ensure that all referenced libraries have been released.
+- Added addtional logging information for debuggng purposes.
+
 ### v3.0.0 (Extended) (01-Jun-2021)
 
 - Added support for net472 and netcoreapp3.1
