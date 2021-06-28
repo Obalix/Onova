@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Onova.Exceptions;
@@ -62,6 +62,15 @@ namespace Onova
 			var logFilePath = Path.Combine(this._storageDirPath, $"{ updatee.Executable}.UpdateManagerLog.txt");
 			this._log = File.CreateText(logFilePath);
 
+			var sb = new StringBuilder();
+			sb.AppendLine("Settings:");
+			sb.AppendLine($"    Updatee: [{this.Updatee.Name}, {this.Updatee.Executable}, {this.Updatee.Version}, {this.Updatee.FilePath}]");
+			sb.AppendLine($"    Resolver: {this._resolver.GetType().Name}");
+			sb.AppendLine($"    Extractor: {this._extractor.GetType().Name}");
+			sb.AppendLine($"    StorageDirPath: {this._storageDirPath}");
+			sb.AppendLine($"    UpdateFilePath: {this._updaterFilePath}");
+			sb.AppendLine($"    LockFilePath: {this._lockFilePath}");
+			sb.AppendLine($"    LogFilePath: {logFilePath}");
 
 			this.WriteLog("UpdateManager initialized");
 		}
@@ -103,10 +112,15 @@ namespace Onova
 			}
 			catch (Exception ex)
 			{
-				if (!(ex is OperationCanceledException))
+				if (ex is OperationCanceledException)
 				{
-					this.WriteLog($"CheckForUpdatesAsync - failed", ex);
+					this.WriteLog("CheckForUpdateAsync - cancelled");
 				}
+				else
+				{
+					this.WriteLog("CheckForUpdatesAsync - failed", ex);
+				}
+
 				throw;
 			}
 		}
@@ -116,6 +130,8 @@ namespace Onova
 		{
 			try
 			{
+				this.WriteLog($"IsUpdatedPrepared - started [version: {version}");
+
 				// Ensure that the current state is valid for this operation
 				this.EnsureNotDisposed();
 
@@ -136,7 +152,7 @@ namespace Onova
 			}
 			catch (Exception ex)
 			{
-				this.WriteLog($"CheckForUpdatesAsync - failed", ex);
+				this.WriteLog($"IsUpdatePrepared - failed", ex);
 				throw;
 			}
 		}
@@ -194,7 +210,7 @@ namespace Onova
 		{
 			try
 			{
-				this.WriteLog("PrepareUpdateAsync - started");
+				this.WriteLog($"PrepareUpdateAsync - started [progress handler presnt: {(progress is IProgress<double>)}");
 
 				// Ensure that the current state is valid for this operation
 				this.EnsureNotDisposed();
@@ -242,8 +258,14 @@ namespace Onova
 			}
 			catch (Exception ex)
 			{
-				this.WriteLog($"PrepareUpdateAsync - failed", ex);
-				throw;
+				if (ex is OperationCanceledException)
+				{
+					this.WriteLog($"PrepareUpdateAsync - cancelled");
+				}
+				else
+				{
+					this.WriteLog($"PrepareUpdateAsync - failed", ex);
+				}
 			}
 		}
 
@@ -251,8 +273,19 @@ namespace Onova
 		public void LaunchUpdater(Version version, bool restart, string restartArguments, string[]? additonalExecutables = null)
 		{
 			try
-			{
-				this.WriteLog("LaunchUpdater - started");
+            {
+				{
+					var sb = new StringBuilder();
+					sb.AppendLine("LaunchUpdater - started [");
+					sb.AppendLine($"    version: {version},");
+					sb.AppendLine($"    restart: {restart}");
+					sb.AppendLine($"    restartArguments: {restartArguments}");
+					sb.AppendLine($"    additionalExecutables: [{string.Join(", ", additonalExecutables ?? Array.Empty<string>())}]");
+					sb.AppendLine("]");
+
+					//this.WriteLog($"LaunchUpdater - started [version: {version}, restart: {restart}, restartArguments: {restartArguments}");
+					this.WriteLog(sb.ToString());
+				}
 
 				// Ensure that the current state is valid for this operation
 				this.EnsureNotDisposed();
@@ -298,6 +331,18 @@ namespace Onova
 					updaterStartInfo.UseShellExecute = true;
 				}
 
+                {
+					var sb = new StringBuilder();
+					sb.AppendLine("LaunchUpdater - Updater start information: [");
+					sb.AppendLine($"    FileName: {updaterStartInfo.FileName}");
+					sb.AppendLine($"    Arguments: {updaterStartInfo.Arguments}");
+					sb.AppendLine($"    CreateNoWindow: {updaterStartInfo.CreateNoWindow}");
+					sb.AppendLine($"    UseShellExecute: {updaterStartInfo.UseShellExecute}");
+					sb.AppendLine($"    Verb: {updaterStartInfo.Verb}");
+					sb.AppendLine("]");
+					this.WriteLog(sb.ToString());
+                }
+
 				// Create and start updater process
 				var updaterProcess = new Process { StartInfo = updaterStartInfo };
 				using (updaterProcess)
@@ -310,7 +355,15 @@ namespace Onova
 			}
 			catch (Exception ex)
             {
-				this.WriteLog($"LaunchUpdater - failed", ex);
+				if (ex is OperationCanceledException)
+				{
+					this.WriteLog($"LaunchUpdater - cancelled");
+				}
+				else
+				{
+					this.WriteLog($"LaunchUpdater - failed", ex);
+				}
+
 				throw;
             }
 		}

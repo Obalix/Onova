@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -110,13 +110,15 @@ namespace Onova.Updater
         {
             var updaterVersion = Assembly.GetExecutingAssembly().GetName().Version;
 
-            WriteLog(
-                $"Onova Updater v{updaterVersion} started with the following arguments:" + Environment.NewLine +
-                $"  UpdateeFilePath = {_updateeFilePath}" + Environment.NewLine +
-                $"  PackageContentDirPath = {_packageContentDirPath}" + Environment.NewLine +
-                $"  RestartUpdatee = {_restartUpdatee}" + Environment.NewLine +
-                $"  RoutedArgs = {_routedArgs}"
-            );
+			var sb = new System.Text.StringBuilder();
+			sb.AppendLine($"Onova Updater v{updaterVersion} started with the following arguments:");
+			sb.AppendLine($"  UpdateeFilePath = {this._updateeFilePath}");
+			sb.AppendLine($"  PackageContentDirPath = {this._packageContentDirPath}");
+			sb.AppendLine($"  RestartUpdatee = {this._restartUpdatee}");
+			sb.AppendLine($"  RoutedArgs = {this._routedArgs}");
+			sb.AppendLine($"  AdditionalExecutables [${string.Join(", ", this._aditionalExecutables)}]");
+
+            this.WriteLog(sb.ToString());
 
             try
             {
