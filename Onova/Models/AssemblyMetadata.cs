@@ -8,10 +8,15 @@ namespace Onova.Models
     /// </summary>
     public partial class AssemblyMetadata
     {
-        /// <summary>
-        /// Assembly name.
+		/// <summary>
+        /// Name of the Onova Directory
         /// </summary>
-        public string Name { get; }
+		public string Name { get; }
+
+        /// <summary>
+        /// Assembly name. (i.e. the executable to be started)
+        /// </summary>
+        public string Executable { get; }
 
         /// <summary>
         /// Assembly version.
@@ -26,11 +31,16 @@ namespace Onova.Models
         /// <summary>
         /// Initializes a new instance of <see cref="AssemblyMetadata"/>.
         /// </summary>
-        public AssemblyMetadata(string name, Version version, string filePath)
+        /// <param name="executable">The name of the executable.</param>
+        /// <param name="filePath">The file path to the executable.</param>
+        /// <param name="version">The assembly version.</param>
+        /// <param name="name">Optional name of the Onova applciation folder. If null the executable name will be used.</param>
+        public AssemblyMetadata(string executable, Version version, string filePath, string? name = null)
         {
-            Name = name;
-            Version = version;
-            FilePath = filePath;
+            this.Executable = executable;
+            this.Name = name ?? executable;
+            this.Version = version;
+            this.FilePath = filePath;
         }
     }
 
@@ -40,27 +50,27 @@ namespace Onova.Models
         /// Extracts assembly metadata from given assembly.
         /// The specified path is used to override the executable file path in case the assembly is not meant to run directly.
         /// </summary>
-        public static AssemblyMetadata FromAssembly(Assembly assembly, string assemblyFilePath)
+        public static AssemblyMetadata FromAssembly(Assembly assembly, string assemblyFilePath, string? name = null)
         {
-            var name = assembly.GetName().Name!;
+            var executable = assembly.GetName().Name!;
             var version = assembly.GetName().Version!;
             var filePath = assemblyFilePath;
 
-            return new AssemblyMetadata(name, version, filePath);
+            return new AssemblyMetadata(executable, version, filePath, name);
         }
 
         /// <summary>
         /// Extracts assembly metadata from given assembly.
         /// </summary>
-        public static AssemblyMetadata FromAssembly(Assembly assembly) => FromAssembly(assembly, assembly.Location);
+        public static AssemblyMetadata FromAssembly(Assembly assembly, string? name = null) => FromAssembly(assembly, assembly.Location, name);
 
         /// <summary>
         /// Extracts assembly metadata from entry assembly.
         /// </summary>
-        public static AssemblyMetadata FromEntryAssembly()
+        public static AssemblyMetadata FromEntryAssembly(string? name = null)
         {
             var assembly = Assembly.GetEntryAssembly() ?? throw new InvalidOperationException("Can't get entry assembly.");
-            return FromAssembly(assembly);
+            return FromAssembly(assembly, name);
         }
     }
 }

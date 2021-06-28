@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -27,40 +27,40 @@ namespace Onova.Updater
             string routedArgs,
             string[] additionalExecutables)
         {
-            _updateeFilePath = updateeFilePath;
-            _packageContentDirPath = packageContentDirPath;
-            _restartUpdatee = restartUpdatee;
-            _routedArgs = routedArgs;
-            _aditionalExecutables = additionalExecutables;
+            this._updateeFilePath = updateeFilePath;
+            this._packageContentDirPath = packageContentDirPath;
+            this._restartUpdatee = restartUpdatee;
+            this._routedArgs = routedArgs;
+            this._aditionalExecutables = additionalExecutables;
         }
 
         private void WriteLog(string content)
         {
             var date = DateTimeOffset.Now;
-            _log.WriteLine($"{date:dd-MMM-yyyy HH:mm:ss.fff}> {content}");
-            _log.Flush();
+            this._log.WriteLine($"{date:dd-MMM-yyyy HH:mm:ss.fff}> {content}");
+            this._log.Flush();
         }
 
         private async Task RunCore()
         {
-            var updateeDirPath = Path.GetDirectoryName(_updateeFilePath);
+            var updateeDirPath = Path.GetDirectoryName(this._updateeFilePath);
 
             // Wait until updatee is writable to ensure all running instances have exited
-            WriteLog("Waiting for all running updatee instances to exit...");
+            this.WriteLog("Waiting for all running updatee instances to exit...");
             //while (!FileEx.CheckWriteAccess(_updateeFilePath))
             //    Thread.Sleep(100);
 
-            var executables = new[] { _updateeFilePath }
-                .Concat(_aditionalExecutables.Where(exe => File.Exists(exe)))
+            var executables = new[] { this._updateeFilePath }
+                .Concat(this._aditionalExecutables.Where(exe => File.Exists(exe)))
                 .Select(exe => FileEx.CheckWriteAccessAsync(exe));
             await Task.WhenAll(executables);
 
             // Copy over the package contents
-            WriteLog("Copying package contents from storage to updatee's directory...");
-            DirectoryEx.Copy(_packageContentDirPath, updateeDirPath);
+            this.WriteLog("Copying package contents from storage to updatee's directory...");
+            DirectoryEx.Copy(this._packageContentDirPath, updateeDirPath);
 
             // Restart updatee if requested
-            if (_restartUpdatee)
+            if (this._restartUpdatee)
             {
                 var startInfo = new ProcessStartInfo
                 {
@@ -70,36 +70,36 @@ namespace Onova.Updater
                 };
 
                 // If updatee is an .exe file - start it directly
-                if (string.Equals(Path.GetExtension(_updateeFilePath), ".exe", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(Path.GetExtension(this._updateeFilePath), ".exe", StringComparison.OrdinalIgnoreCase))
                 {
-                    startInfo.FileName = _updateeFilePath;
+                    startInfo.FileName = this._updateeFilePath;
                 }
                 // If not - figure out what to do with it
                 else
                 {
                     // If there's an .exe file with same name - start it instead
                     // Security vulnerability?
-                    if (File.Exists(Path.ChangeExtension(_updateeFilePath, ".exe")))
+                    if (File.Exists(Path.ChangeExtension(this._updateeFilePath, ".exe")))
                     {
-                        startInfo.FileName = Path.ChangeExtension(_updateeFilePath, ".exe");
+                        startInfo.FileName = Path.ChangeExtension(this._updateeFilePath, ".exe");
                     }
                     // Otherwise - start the updatee using dotnet SDK
                     else
                     {
                         startInfo.FileName = "dotnet";
-                        startInfo.Arguments = $"{_updateeFilePath} {_routedArgs}";
+                        startInfo.Arguments = $"{this._updateeFilePath} {this._routedArgs}";
                     }
                 }
 
-                WriteLog($"Restarting updatee [{startInfo.FileName} {startInfo.Arguments}]...");
+                this.WriteLog($"Restarting updatee [{startInfo.FileName} {startInfo.Arguments}]...");
 
                 using var restartedUpdateeProcess = Process.Start(startInfo);
-                WriteLog($"Restarted as pid:{restartedUpdateeProcess?.Id}.");
+                this.WriteLog($"Restarted as pid:{restartedUpdateeProcess?.Id}.");
             }
 
             // Delete package content directory
-            WriteLog("Deleting package contents from storage...");
-            Directory.Delete(_packageContentDirPath, true);
+            this.WriteLog("Deleting package contents from storage...");
+            Directory.Delete(this._packageContentDirPath, true);
         }
 
         public async Task Run()
@@ -116,14 +116,14 @@ namespace Onova.Updater
 
             try
             {
-                await RunCore();
+                await this.RunCore();
             }
             catch (Exception ex)
             {
-                WriteLog(ex.ToString());
+                this.WriteLog(ex.ToString());
             }
         }
 
-        public void Dispose() => _log.Dispose();
+        public void Dispose() => this._log.Dispose();
     }
 }

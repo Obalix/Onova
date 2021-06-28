@@ -14,9 +14,12 @@ namespace Onova.Tests
     {
         private string TempDirPath { get; } = Path.Combine(Directory.GetCurrentDirectory(), $"{nameof(UpdateSpecs)}_{Guid.NewGuid()}");
 
-        public UpdateSpecs() => DirectoryEx.Reset(TempDirPath);
+        public UpdateSpecs()
+        {
+            DirectoryEx.Reset(this.TempDirPath);
+        }
 
-        public void Dispose() => DirectoryEx.DeleteIfExists(TempDirPath);
+        public void Dispose() => DirectoryEx.DeleteIfExists(this.TempDirPath);
 
         [Fact]
         public async Task I_can_check_for_updates_and_get_a_higher_version_if_it_is_available()
@@ -28,7 +31,7 @@ namespace Onova.Tests
             DirectoryEx.DeleteIfExists(
                 Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "Onova", updatee.Name)
+                    "Onova", updatee.Executable)
             );
 
             var availableVersions = new[]
@@ -63,7 +66,7 @@ namespace Onova.Tests
             DirectoryEx.DeleteIfExists(
                 Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "Onova", updatee.Name)
+                    "Onova", updatee.Executable)
             );
 
             var availableVersions = new[]
@@ -98,7 +101,7 @@ namespace Onova.Tests
             DirectoryEx.DeleteIfExists(
                 Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "Onova", updatee.Name)
+                    "Onova", updatee.Executable)
             );
 
             var availableVersions = Array.Empty<Version>();
@@ -128,7 +131,7 @@ namespace Onova.Tests
             DirectoryEx.DeleteIfExists(
                 Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "Onova", updatee.Name)
+                    "Onova", updatee.Executable)
             );
 
             var availableVersions = new[]
@@ -163,7 +166,7 @@ namespace Onova.Tests
             DirectoryEx.DeleteIfExists(
                 Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "Onova", updatee.Name)
+                    "Onova", updatee.Executable)
             );
 
             var availableVersions = new[]
@@ -199,7 +202,7 @@ namespace Onova.Tests
         public async Task I_can_install_an_update_after_preparing_it()
         {
             // Arrange
-            using var dummy = new DummyEnvironment(Path.Combine(TempDirPath, "Dummy"));
+            using var dummy = new DummyEnvironment(Path.Combine(this.TempDirPath, "Dummy"));
 
             var baseVersion = Version.Parse("1.0.0.0");
 
@@ -230,7 +233,7 @@ namespace Onova.Tests
         public async Task I_can_install_an_update_after_preparing_it_and_have_the_application_restarted_automatically()
         {
             // Arrange
-            using var dummy = new DummyEnvironment(Path.Combine(TempDirPath, "Dummy"));
+            using var dummy = new DummyEnvironment(Path.Combine(this.TempDirPath, "Dummy"));
 
             var baseVersion = Version.Parse("1.0.0.0");
 

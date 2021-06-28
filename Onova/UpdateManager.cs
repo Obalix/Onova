@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -38,7 +38,6 @@ namespace Onova
 		/// <summary>
 		/// Initializes an instance of <see cref="UpdateManager"/>.
 		/// </summary>
-		[SuppressMessage("CodeQuality", "IDE0079", Justification = "Suppression necessary for netcore31")]
 		public UpdateManager(AssemblyMetadata updatee, IPackageResolver resolver, IPackageExtractor extractor)
 		{
 			Platform.EnsureWindows();
@@ -55,12 +54,14 @@ namespace Onova
 			);
 
 			// Set updater executable file path
-			this._updaterFilePath = Path.Combine(this._storageDirPath, $"{updatee.Name}.Updater.exe");
+			this._updaterFilePath = Path.Combine(this._storageDirPath, $"{updatee.Executable}.Updater.exe");
 
 			// Set lock file path
 			this._lockFilePath = Path.Combine(this._storageDirPath, "Onova.lock");
 
-			this._log = File.CreateText(Path.Combine(this._storageDirPath, $"{ updatee.Name}.UpdateManagerLog.txt"));
+			var logFilePath = Path.Combine(this._storageDirPath, $"{ updatee.Executable}.UpdateManagerLog.txt");
+			this._log = File.CreateText(logFilePath);
+
 
 			this.WriteLog("UpdateManager initialized");
 		}
@@ -68,8 +69,8 @@ namespace Onova
 		/// <summary>
 		/// Initializes an instance of <see cref="UpdateManager"/> on the entry assembly.
 		/// </summary>
-		public UpdateManager(IPackageResolver resolver, IPackageExtractor extractor)
-			: this(AssemblyMetadata.FromEntryAssembly(), resolver, extractor)
+		public UpdateManager(IPackageResolver resolver, IPackageExtractor extractor, string? onovaDirName = null)
+			: this(AssemblyMetadata.FromEntryAssembly(onovaDirName), resolver, extractor)
 		{
 		}
 
